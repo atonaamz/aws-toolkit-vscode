@@ -12,7 +12,8 @@ import { AmazonQLspAuth, encryptionKey, notificationTypes } from './auth'
 import { AuthUtil } from 'aws-core-vscode/codewhisperer'
 import { ConnectionMetadata } from '@aws/language-server-runtimes/protocol'
 import { Settings, oidcClientName, createServerOptions, globals, Experiments, Commands } from 'aws-core-vscode/shared'
-import { activate } from './chat/activation'
+import { activate as activateChat } from './chat/activation'
+import { activate as activateEdits } from '../app/edits/activation'
 import { AmazonQResourcePaths } from './lspInstaller'
 
 const localize = nls.loadMessageBundle()
@@ -118,7 +119,11 @@ export async function startLanguageServer(
         }
 
         if (Experiments.instance.get('amazonqChatLSP', false)) {
-            activate(client, encryptionKey, resourcePaths.ui)
+            activateChat(client, encryptionKey, resourcePaths.ui)
+        }
+
+        if (Experiments.instance.get('amazonqLSPEdits', false)) {
+            activateEdits(client, extensionContext)
         }
 
         const refreshInterval = auth.startTokenRefreshInterval()

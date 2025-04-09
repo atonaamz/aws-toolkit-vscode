@@ -163,7 +163,12 @@ export async function activateAmazonQCommon(context: vscode.ExtensionContext, is
 
     context.subscriptions.push(
         Experiments.instance.onDidChange(async (event) => {
-            if (event.key === 'amazonqLSP' || event.key === 'amazonqChatLSP' || event.key === 'amazonqLSPInline') {
+            if (
+                event.key === 'amazonqLSP' ||
+                event.key === 'amazonqChatLSP' ||
+                event.key === 'amazonqLSPInline' ||
+                event.key === 'amazonqLSPEdits'
+            ) {
                 await vscode.window
                     .showInformationMessage(
                         'Amazon Q LSP setting has changed. Reload VS Code for the changes to take effect.',

@@ -258,6 +258,10 @@
                         "amazonqChatLSP": {
                             "type": "boolean",
                             "default": false
+                        },
+                        "amazonqLSPEdits": {
+                            "type": "boolean",
+                            "default": false
                         }
                     },
                     "additionalProperties": false

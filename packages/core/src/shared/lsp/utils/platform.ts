@@ -38,9 +38,9 @@ export function createServerOptions({
     return async () => {
         const args = [serverModule, ...execArgv]
         if (isDebugInstance()) {
-            args.unshift('--inspect=6080')
+            args.unshift('--inspect-brk=6012')
         }
-        const lspProcess = new ChildProcess(executable, args)
+        const lspProcess = new ChildProcess(executable, args, { logging: 'yes' })
 
         // this is a long running process, awaiting it will never resolve
         void lspProcess.run()
