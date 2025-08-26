@@ -7,6 +7,7 @@ import { diffWordsWithSpace, diffLines } from 'diff'
 import * as vscode from 'vscode'
 import { ToolkitError, getLogger } from 'aws-core-vscode/shared'
 import { diffUtilities } from 'aws-core-vscode/shared'
+import { stripCommonIndentation } from './stringUtils'
 type Range = { line: number; start: number; end: number }
 
 const logger = getLogger('nextEditPrediction')
@@ -76,6 +77,7 @@ export class SvgGenerationService {
 
         const highlightRanges = this.generateHighlightRanges(removedLines, addedLines, modifiedLines)
         const diffAddedWithHighlight = this.getHighlightEdit(addedLines, highlightRanges.addedRanges)
+        const normalizedDiffLines = stripCommonIndentation(diffAddedWithHighlight)
 
         // Create SVG window, document, and container
         const window = createSVGWindow()
@@ -88,7 +90,7 @@ export class SvgGenerationService {
 
         // Generate CSS for syntax highlighting HTML content based on theme
         const styles = this.generateStyles(currentTheme)
-        const htmlContent = this.generateHtmlContent(diffAddedWithHighlight, styles, offset)
+        const htmlContent = this.generateHtmlContent(normalizedDiffLines, styles, offset)
 
         // Create foreignObject to embed HTML
         const foreignObject = draw.foreignObject(width + offset, height)
@@ -160,6 +162,9 @@ export class SvgGenerationService {
                 white-space: pre-wrap; /* Preserve whitespace */
                 background-color: ${diffAdded};
             }
+            .diff-unchanged {
+                white-space: pre-wrap; /* Preserve indentation for unchanged lines */
+            }
         `
     }
 
@@ -227,7 +232,7 @@ export class SvgGenerationService {
 
             // If no ranges for this line, leave it as-is with HTML escaping
             if (lineRanges.length === 0) {
-                result.push(this.escapeHtml(line))
+                result.push(`<span class="diff-unchanged">${this.escapeHtml(line)}</span>`)
                 continue
             }
 
@@ -242,7 +247,7 @@ export class SvgGenerationService {
                 // Add text before the current range (with HTML escaping)
                 if (range.start > currentPos) {
                     const beforeText = line.substring(currentPos, range.start)
-                    highlightedLine += this.escapeHtml(beforeText)
+                    highlightedLine += `<span class="diff-unchanged">${this.escapeHtml(beforeText)}</span>`
                 }
 
                 // Add the highlighted part (with HTML escaping)
@@ -256,7 +261,7 @@ export class SvgGenerationService {
             // Add any remaining text after the last range (with HTML escaping)
             if (currentPos < line.length) {
                 const afterText = line.substring(currentPos)
-                highlightedLine += this.escapeHtml(afterText)
+                highlightedLine += `<span class="diff-unchanged">${this.escapeHtml(afterText)}</span>`
             }
 
             result.push(highlightedLine)
